@@ -3,6 +3,13 @@
 squid_scanner.py
 
 Description: scans all media files in the parent directory and outputs a json file in the following format:
+[{
+    "ID" <id>,
+    "Name" <"file_name">,
+    "Value" <"A/B/C/S">,
+    "Type":" <"image/video">,
+    "Filename": <"file_name.ext">,
+}]
 Author: Haotian
 Date: 2025-06-02
 """
@@ -17,7 +24,7 @@ INVALIDS_TXT = os.path.join(CD, 'invalid.txt')
 
 VALID_FILETYPES = (".jpg", ".png", ".mp4", ".webm")
 IMAGE_FILETYPES = (".jpg", ".png")
-VALID_STATUS = ("S", "A", "B", "C")
+VALID_VALUE = ("S", "A", "B", "C")
 SEPARATOR = '-'
 
 def sift_files():
@@ -36,8 +43,8 @@ def sift_files():
         badfields = []
         if not prefix[0].isdigit():
             badfields.append("invalid ID")
-        if prefix[2] not in VALID_STATUS:
-            badfields.append("invalid status")
+        if prefix[2] not in VALID_VALUE:
+            badfields.append("invalid value")
         if len(badfields) > 0:
             invalid_files.append(file + ' -- ' + ', '.join(badfields) + '\n')
             continue
