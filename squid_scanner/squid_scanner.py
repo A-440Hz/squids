@@ -3,13 +3,6 @@
 squid_scanner.py
 
 Description: scans all media files in the parent directory and outputs a json file in the following format:
-[{
-    "ID" <id>,
-    "Name" <"file_name">,
-    "Value" <"A/B/C/S">,
-    "Type":" <"image/video">,
-    "Filename": <"file_name.ext">,
-}]
 Author: Haotian
 Date: 2025-06-02
 """
@@ -24,7 +17,7 @@ INVALIDS_TXT = os.path.join(CD, 'invalid.txt')
 
 VALID_FILETYPES = (".jpg", ".png", ".mp4", ".webm")
 IMAGE_FILETYPES = (".jpg", ".png")
-VALID_VALUE = ("S", "A", "B", "C")
+VALID_STATUS = ("S", "A", "B", "C")
 SEPARATOR = '-'
 
 def sift_files():
@@ -43,8 +36,8 @@ def sift_files():
         badfields = []
         if not prefix[0].isdigit():
             badfields.append("invalid ID")
-        if prefix[2] not in VALID_VALUE:
-            badfields.append("invalid value")
+        if prefix[2] not in VALID_STATUS:
+            badfields.append("invalid status")
         if len(badfields) > 0:
             invalid_files.append(file + ' -- ' + ', '.join(badfields) + '\n')
             continue
@@ -56,7 +49,25 @@ def sift_files():
             "Filename": file,
 
         })
-    return valid_objs, invalid_files
+    return sorted(valid_objs, key=lambda x: x["ID"]), invalid_files
+
+def convert_to_object_structure(items):
+    """
+    Convert array of items with ID field to object keyed by ID.
+    
+    Args:
+        items: List of dictionaries, each with an 'ID' field
+        
+    Returns:
+        Dictionary keyed by ID strings, without the ID field in values
+    """
+    result = {}
+    for item in items:
+        item_id = str(item['ID'])  # Convert ID to string for JSON key
+        # Create new dict without the ID field
+        item_copy = {k: v for k, v in item.items() if k != 'ID'}
+        result[item_id] = item_copy
+    return result
 
 def main():   
     valids, invalids = sift_files()
@@ -71,3 +82,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+    items = []
+    with open(JSON_OUTPUT, 'r') as f:
+        items = json.load(f)
+    with open(MAP_OUTPUT, 'w') as f:
+        json.dump(convert_to_object_structure(items), f, indent=4)
